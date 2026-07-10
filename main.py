@@ -7,7 +7,6 @@ import Backtest
 import Strategy
 import pandas as pd
 
-# Keep the full S&P 500 universe, but avoid expensive plotting during the scan.
 pairs = list(DataLoader.stockCombi_df.itertuples(index=False))
 print(f"Running backtest on {len(pairs)} candidate pairs using up to {min(8, os.cpu_count() or 1)} threads...")
 
