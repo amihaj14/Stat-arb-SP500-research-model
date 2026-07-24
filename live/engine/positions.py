@@ -70,15 +70,8 @@ def log_trade(trade_row: dict):
 
 def log_pnl(pnl_row: dict):
     PNL_PATH.parent.mkdir(parents=True, exist_ok=True)
-    if PNL_PATH.exists():
-        try:
-            df = pd.read_csv(PNL_PATH)
-        except pd.errors.EmptyDataError:
-            df = pd.DataFrame()
-        df = pd.concat([df, pd.DataFrame([pnl_row])], ignore_index=True)
-    else:
-        df = pd.DataFrame([pnl_row])
-    df.to_csv(PNL_PATH, index=False)
+    file_exists = PNL_PATH.exists() and PNL_PATH.stat().st_size > 0
+    pd.DataFrame([pnl_row]).to_csv(PNL_PATH, mode="a", header=not file_exists, index=False)
 
 
 def open_spread(pair_cfg, latest_prices, side: str, size_notional: float):

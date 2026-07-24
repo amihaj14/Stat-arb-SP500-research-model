@@ -11,7 +11,7 @@ import pandas as pd
 ENTRY_THRESHOLD = 2.5
 EXIT_THRESHOLD = 0.5
 WINDOW_LENGTH = 60
-TOP_N_PAIRS = 6
+TOP_N_PAIRS = 32
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT_DIR / "live" / "config" / "pairs_config.csv"

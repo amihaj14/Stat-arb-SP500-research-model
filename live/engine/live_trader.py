@@ -5,6 +5,7 @@ import pandas as pd
 import os
 import sys
 
+
 from live.engine.auth import get_session
 from live.engine.live_data import get_latest_quotes, get_history
 from live.engine.positions import load_positions, save_positions, log_pnl, log_trade, open_spread, close_spread
@@ -13,11 +14,9 @@ from live.engine.risk import new_position, stop_loss, map_zscore_to_side, MAX_NO
 from live.engine.notify import notify
 
 
-
-
-
+PNL_PATH = Path('live/logs/daily_pnl.csv')
 PAIRS_CONFIG_PATH = Path('live/config/pairs_config.csv')
-CAPITAL = 100_000
+
 REQUIRED_COLUMNS = [
     'Pair',
     'Stock1',
@@ -29,6 +28,19 @@ REQUIRED_COLUMNS = [
     'Window Length',
 ]
 
+STARTING_CAPITAL = 100_000
+
+def _get_current_capital(pnl_path, starting_capital=STARTING_CAPITAL):
+    if not Path(pnl_path).exists():
+        return starting_capital
+    try:
+        df = pd.read_csv(pnl_path)
+    except pd.errors.EmptyDataError:
+        return starting_capital
+    if df.empty or "realized_pnl" not in df.columns:
+        return starting_capital
+    total_realized = df["realized_pnl"].fillna(0).sum()
+    return starting_capital + total_realized
 
 def load_pairs_config():
     df = pd.read_csv(PAIRS_CONFIG_PATH)
@@ -156,7 +168,7 @@ def paper_trade_step(as_of_ts: datetime):
         # 4c. If there is an open position, check stop-loss / drawdown
         if current_pos is not None:
             latest_pnl = _compute_unrealized_pnl_and_drawdown(current_pos, latest_prices)
-            should_stop, stop_reason = stop_loss(current_pos, latest_pnl, latest_z)
+            should_stop, stop_reason = stop_loss(current_pos, latest_pnl, latest_z, entry_z)
 
             # Determine if we should close: either stop-loss or exit band says flat
             if should_stop or desired_side is None:
@@ -206,7 +218,7 @@ def paper_trade_step(as_of_ts: datetime):
                 continue
 
             size_notional = MAX_NOTIONAL_PER_PAIR  # or tune per pair later
-            ok, reason = new_position(positions, CAPITAL, size_notional)
+            ok, reason = new_position(positions, _get_current_capital(PNL_PATH), size_notional)
             if not ok:
                 # optional: log that we skipped due to risk limits
                 log_pnl({
@@ -251,7 +263,7 @@ def paper_trade_step(as_of_ts: datetime):
     # 5. Persist updated positions
     save_positions(positions)
 
-    if as_of_ts.hour == 14 and as_of_ts.minute <= 30:  # ~9:30 AM ET first run
+    if as_of_ts.hour == 13 and as_of_ts.minute <= 30:  # ~9:30 AM ET first run
         notify("Live trader ran successfully this morning.", title="Heartbeat")
 
 

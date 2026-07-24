@@ -3,10 +3,9 @@
 
 MAX_NOTIONAL_PER_PAIR = 10000
 MAX_OPEN_PAIRS = 5
-MAX_PCT_CAPITAL_PER_PAIR = 0.02
+MAX_PCT_CAPITAL_PER_PAIR = 0.2
 STOP_LOSS_MULTIPLIER = 1.5
 MAX_DRAWDOWN_PER_PAIR = 0.325
-ENTRY_Z = 2.5
 
 def new_position(positions_dict, capital, size_notional):
     if len(positions_dict) >= MAX_OPEN_PAIRS:
@@ -20,12 +19,11 @@ def new_position(positions_dict, capital, size_notional):
 
     return True, ""
 
-def stop_loss(position, latest_pnl, current_z):
+def stop_loss(position, latest_pnl, current_z, entry_z):
     if latest_pnl['drawdown'] <= -MAX_DRAWDOWN_PER_PAIR:
         return True, "Pair drawdown beyond limit"
-    elif abs(current_z) >= STOP_LOSS_MULTIPLIER*ENTRY_Z:
+    elif abs(current_z) >= STOP_LOSS_MULTIPLIER * entry_z:
         return True, f"Stop loss hit at {position}"
-
     return False, ""
 
 

@@ -12,12 +12,10 @@
 .qt_trader.lock
 
 # Live trading logs / state (local runtime artifacts, not source)
-live/logs/
-live/state/
-daily_pnl.csv
-positions.csv
-trades.csv
-scheduler_output.log
+live/logs/*.csv
+live/logs/positions*.csv
+live/logs/trades*.csv
+live/logs/daily_pnl*.csv
 
 # Scheduler batch wrapper (contains local absolute paths, personal info)
 run_trader.bat
