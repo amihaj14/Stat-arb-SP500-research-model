@@ -1,11 +1,3 @@
-pandas
-numpy
-statsmodels
-yfinance
-matplotlib
-requests
-
-
 # Statistical Arbitrage — S&P 500 Pairs Trading System
 
 ## Overview
